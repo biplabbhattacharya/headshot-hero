@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback } from 'react';
 import { Camera, Upload, Download, Sparkles, CheckCircle, Clock } from 'lucide-react';
 
