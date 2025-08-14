@@ -17,7 +17,7 @@ export default function Home() {
           preview: e.target.result,
           name: file.name
         });
-        setError(null); // Clear any previous errors
+        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -28,13 +28,11 @@ export default function Home() {
     setError(null);
     
     try {
-      // Prepare form data for API
       const formData = new FormData();
       formData.append('image', uploadedImage.file);
 
       console.log('Sending image to AI...');
 
-      // Call our API endpoint
       const response = await fetch('/api/generate-headshots', {
         method: 'POST',
         body: formData,
@@ -59,11 +57,9 @@ export default function Home() {
 
   const downloadImage = async (imageUrl, filename) => {
     try {
-      // Fetch the image
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       
-      // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -86,43 +82,50 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Modern Header with Glassmorphism Effect */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-indigo-600 rounded-lg p-2">
-                <span className="text-white text-xl">📷</span>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-3 shadow-lg">
+                  <span className="text-white text-2xl">📸</span>
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-full animate-pulse"></div>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">Headshot Hero</h1>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                  Headshot Hero
+                </h1>
+                <p className="text-sm text-gray-500 font-medium">Powered by AI</p>
+              </div>
             </div>
-            <div className="text-sm text-gray-600">
-              Professional AI Headshots
+            <div className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-full border border-indigo-100">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-gray-700">Professional AI Headshots</span>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Error Display */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Error Display with Modern Styling */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <span className="text-red-400">❌</span>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Generation Failed
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{error}</p>
+          <div className="mb-8 relative">
+            <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl p-6 shadow-lg backdrop-blur-sm">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <span className="text-red-500 text-lg">⚠️</span>
+                  </div>
                 </div>
-                <div className="mt-4">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-red-800 mb-2">Generation Failed</h3>
+                  <p className="text-red-700 mb-4">{error}</p>
                   <button
                     onClick={() => setError(null)}
-                    className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-200"
+                    className="bg-white text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-50 transition-all duration-200 shadow-sm"
                   >
                     Dismiss
                   </button>
@@ -133,92 +136,115 @@ export default function Home() {
         )}
 
         {!uploadedImage && !processedImages.length && (
-          // Upload Section
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Transform Your Photos into Professional Headshots
-            </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Upload your photo and get multiple professional headshot styles powered by AI
-            </p>
+          // Hero Upload Section with Modern Design
+          <div className="text-center mb-12">
+            <div className="mb-8">
+              <h2 className="text-5xl md:text-6xl font-bold mb-6">
+                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Transform your selfies
+                </span>
+                <br />
+                <span className="text-gray-800">to professional headshots</span>
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Upload your selfie and get multiple professional headshot styles powered by cutting-edge AI technology
+              </p>
+            </div>
 
-            {/* Upload Area */}
-            <div className="relative border-2 border-dashed border-gray-300 hover:border-gray-400 rounded-lg p-8 transition-colors">
-              <div className="space-y-4">
-                <div className="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">📤</span>
+            {/* Modern Upload Area with Floating Effect */}
+            <div className="max-w-2xl mx-auto">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+                <div className="relative bg-white rounded-3xl p-12 shadow-xl border border-gray-100 transition-all duration-300 hover:shadow-2xl">
+                  <div className="space-y-6">
+                    <div className="mx-auto w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-3xl">📤</span>
+                    </div>
+                    <div>
+                      <p className="text-xl text-gray-700 mb-6 font-medium">
+                        Drop your selfie here or click to browse
+                      </p>
+                      <label className="relative inline-flex items-center">
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg cursor-pointer hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                          <span className="mr-3">✨</span>
+                          Choose Your Selfie
+                        </div>
+                        <input
+                          type="file"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e.target.files[0])}
+                        />
+                      </label>
+                    </div>
+                    <p className="text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-full inline-block">
+                      Supports JPG, PNG, and other image formats (max 10MB)
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-lg text-gray-600">
-                    Choose your photo to get started
-                  </p>
-                  <label className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer">
-                    <span className="mr-2">📤</span>
-                    Choose File
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e.target.files[0])}
-                    />
-                  </label>
-                </div>
-                <p className="text-sm text-gray-500">
-                  Supports JPG, PNG, and other image formats (max 10MB)
-                </p>
               </div>
             </div>
           </div>
         )}
 
         {uploadedImage && !isProcessing && processedImages.length === 0 && (
-          // Preview and Generate Section
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-semibold mb-4">Photo Preview</h3>
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-1">
-                <img
-                  src={uploadedImage.preview}
-                  alt="Uploaded preview"
-                  className="w-full h-64 object-cover rounded-lg"
-                />
-                <p className="text-sm text-gray-600 mt-2">{uploadedImage.name}</p>
+          // Modern Preview Section
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-8 py-6 border-b border-gray-100">
+                <h3 className="text-2xl font-bold text-gray-800">Ready to Transform! 🚀</h3>
               </div>
-              <div className="flex-1 space-y-4">
-                <h4 className="font-semibold text-gray-900">What you'll get:</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-green-500">✅</span>
-                    <span className="text-sm">4 professional headshot styles</span>
+              <div className="p-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="relative group">
+                      <img
+                        src={uploadedImage.preview}
+                        alt="Your selfie"
+                        className="w-full h-80 object-cover rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow duration-300"
+                      />
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-700">
+                        Your Selfie
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 font-medium">{uploadedImage.name}</p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-green-500">✅</span>
-                    <span className="text-sm">High-resolution AI-generated images</span>
+                  
+                  <div className="space-y-6">
+                    <h4 className="text-xl font-bold text-gray-800">What you'll get:</h4>
+                    <div className="space-y-4">
+                      {[
+                        '4 professional headshot styles',
+                        'AI-enhanced facial features',
+                        'High-resolution downloads',
+                        'Professional lighting & backgrounds'
+                      ].map((feature, index) => (
+                        <div key={index} className="flex items-center space-x-3">
+                          <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-xs">✓</span>
+                          </div>
+                          <span className="text-gray-700 font-medium">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="pt-6 space-y-4">
+                      <button
+                        onClick={generateHeadshots}
+                        disabled={isProcessing}
+                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      >
+                        <span className="mr-3">✨</span>
+                        Generate Professional Headshots
+                      </button>
+                      <button
+                        onClick={resetApp}
+                        className="w-full text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
+                      >
+                        Choose Different Photo
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-green-500">✅</span>
-                    <span className="text-sm">Professional lighting & backgrounds</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-green-500">✅</span>
-                    <span className="text-sm">Corporate and casual styles</span>
-                  </div>
-                </div>
-                <div className="pt-4">
-                  <button
-                    onClick={generateHeadshots}
-                    disabled={isProcessing}
-                    className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-2 disabled:bg-gray-400"
-                  >
-                    <span>✨</span>
-                    <span>Generate Professional Headshots with AI</span>
-                  </button>
-                  <button
-                    onClick={resetApp}
-                    className="w-full mt-2 text-gray-600 hover:text-gray-800 text-sm"
-                  >
-                    Choose Different Photo
-                  </button>
                 </div>
               </div>
             </div>
@@ -226,60 +252,76 @@ export default function Home() {
         )}
 
         {isProcessing && (
-          // Processing Section
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <h3 className="text-xl font-semibold mb-2">Creating Your Professional Headshots</h3>
-            <p className="text-gray-600 mb-4">Our AI is analyzing your photo and generating professional headshots...</p>
-            <p className="text-sm text-gray-500 mb-4">This usually takes 1-2 minutes for high-quality results.</p>
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-              <span>🕐</span>
-              <span>Processing with AI...</span>
+          // Modern Processing Section
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl p-12 text-center border border-gray-100">
+              <div className="relative mb-8">
+                <div className="w-24 h-24 mx-auto">
+                  <div className="w-full h-full border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl">🎨</span>
+                </div>
+              </div>
+              <h3 className="text-3xl font-bold text-gray-800 mb-4">Creating Your Professional Headshots</h3>
+              <p className="text-gray-600 mb-6 text-lg">Our AI is analyzing your photo and generating stunning professional headshots...</p>
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-4 inline-flex items-center space-x-3">
+                <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+                <span className="text-gray-700 font-medium">Processing with advanced AI (usually 1-2 minutes)</span>
+              </div>
             </div>
           </div>
         )}
 
         {processedImages.length > 0 && (
-          // Results Section
-          <div className="space-y-6">
+          // Modern Results Section
+          <div className="space-y-8">
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Your Professional AI Headshots Are Ready!
+              <h3 className="text-4xl font-bold mb-4">
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Your Professional Headshots Are Ready! 🎉
+                </span>
               </h3>
-              <p className="text-gray-600">Click any image to download the high-resolution version</p>
+              <p className="text-xl text-gray-600">Click any image to download the high-resolution version</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {processedImages.map((image) => (
-                <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="relative group">
-                    <img
-                      src={image.url}
-                      alt={`${image.style} headshot`}
-                      className="w-full h-64 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-                      <button
-                        onClick={() => downloadImage(image.url, `headshot-${image.style.toLowerCase()}.jpg`)}
-                        className="opacity-0 group-hover:opacity-100 bg-white text-gray-900 px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-all duration-200"
-                      >
-                        <span>⬇️</span>
-                        <span>Download</span>
-                      </button>
+                <div key={image.id} className="group">
+                  <div className="relative bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                    <div className="relative overflow-hidden">
+                      <img
+                        src={image.url}
+                        alt={`${image.style} headshot`}
+                        className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button
+                          onClick={() => downloadImage(image.url, `headshot-${image.style.toLowerCase()}.jpg`)}
+                          className="bg-white text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                        >
+                          <span>⬇️</span>
+                          <span>Download HD</span>
+                        </button>
+                      </div>
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-gray-800">
+                        {image.style}
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-semibold text-gray-900">{image.style} Style</h4>
-                    <p className="text-sm text-gray-600">AI-generated professional headshot</p>
+                    <div className="p-6">
+                      <h4 className="text-xl font-bold text-gray-800 mb-2">{image.style} Style</h4>
+                      <p className="text-gray-600">AI-generated professional headshot ready for LinkedIn, resumes, and more</p>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="text-center pt-6">
+            <div className="text-center pt-8">
               <button
                 onClick={resetApp}
-                className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 Create New Headshots
               </button>
@@ -288,11 +330,27 @@ export default function Home() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600">
-            <p>&copy; 2025 Headshot Hero. Biplab Bhattacharya. Transform your photos with AI.</p>
+      {/* Modern Footer with Your Credit */}
+      <footer className="bg-white/80 backdrop-blur-xl border-t border-gray-200 mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center space-x-8 text-sm text-gray-500">
+              <span>🚀 Powered by Advanced AI</span>
+              <span>⚡ Lightning Fast Processing</span>
+              <span>🔒 Secure & Private</span>
+            </div>
+            
+            <div className="border-t border-gray-200 pt-6">
+              <p className="text-gray-600 mb-2">
+                &copy; 2025 Headshot Hero. Transform your selfies with AI.
+              </p>
+              <p className="text-sm text-gray-500">
+                Created by{' '}
+                <span className="font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Biplab Bhattacharya
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </footer>
