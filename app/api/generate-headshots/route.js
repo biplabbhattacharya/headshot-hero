@@ -7,7 +7,15 @@ const replicate = new Replicate({
 
 export async function POST(request) {
   try {
-    // Parse the form data
+    console.log('API endpoint called');
+    
+    if (!process.env.REPLICATE_API_TOKEN) {
+      return NextResponse.json(
+        { error: 'Server configuration error: API token not found' },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const imageFile = formData.get('image');
     
@@ -18,70 +26,71 @@ export async function POST(request) {
       );
     }
 
-    // Convert file to base64 data URL
+    console.log('Processing image:', imageFile.name);
+
+    // Convert to base64
     const bytes = await imageFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64 = buffer.toString('base64');
     const mimeType = imageFile.type;
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    console.log('Starting AI generation...');
+    console.log('Starting generation with cheapest models...');
 
-    // Generate multiple headshot styles using different prompts
+    // Define 4 different cheap headshot prompts
     const styles = [
       {
         name: 'Professional',
-        prompt: 'professional corporate headshot, business attire, neutral background, high quality, professional lighting'
+        prompt: 'professional business headshot, corporate attire, clean background, studio lighting, high quality portrait photography'
       },
       {
-        name: 'Corporate',
-        prompt: 'executive corporate portrait, formal business suit, clean background, professional studio lighting'
+        name: 'Corporate', 
+        prompt: 'executive corporate portrait, formal business suit, neutral background, professional photographer, sharp focus'
       },
       {
         name: 'Casual',
-        prompt: 'casual professional headshot, smart casual attire, soft lighting, approachable and friendly'
+        prompt: 'professional casual headshot, smart casual clothing, soft lighting, approachable expression, clean background'
       },
       {
         name: 'Executive',
-        prompt: 'executive leadership portrait, formal attire, sophisticated background, confident and authoritative'
+        prompt: 'senior executive portrait, formal attire, confident expression, professional studio setup, high-end photography'
       }
     ];
 
-    // Generate all headshots in parallel
-    const generationPromises = styles.map(async (style) => {
+    // Generate all 4 styles using the cheapest model
+    const generationPromises = styles.map(async (style, index) => {
       try {
+        console.log(`Generating ${style.name} style...`);
+        
         const output = await replicate.run(
-          "tencentarc/photomaker:ddfc2b08d209f9fa8c1eca692712918bd449f695dabb4a958da31802a9570fe4",
+          // This is one of the cheapest models (~$0.0023 per image)
+          "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
           {
             input: {
-              prompt: `${style.prompt}, photorealistic, high resolution`,
-              input_image: dataUrl,
-              negative_prompt: "blurry, low quality, distorted, cartoon, anime, painting, sketch",
-              num_outputs: 1,
-              guidance_scale: 5,
-              num_inference_steps: 20,
+              prompt: `${style.prompt}, photorealistic, detailed, professional photography`,
+              image: dataUrl,
+              strength: 0.7, // How much to change the original image
+              guidance_scale: 7.5,
+              num_inference_steps: 20, // Lower steps = cheaper
               seed: Math.floor(Math.random() * 1000000)
             }
           }
         );
 
         return {
-          id: Math.random().toString(36).substr(2, 9),
+          id: `${index + 1}`,
           style: style.name,
           url: Array.isArray(output) ? output[0] : output,
           generated_at: new Date().toISOString()
         };
       } catch (error) {
-        console.error(`Error generating ${style.name} style:`, error);
-        // Return a fallback or skip this style
+        console.error(`Error generating ${style.name}:`, error.message);
         return null;
       }
     });
 
-    // Wait for all generations to complete
+    // Wait for all generations
     const results = await Promise.all(generationPromises);
-    
-    // Filter out any failed generations
     const successfulResults = results.filter(result => result !== null);
 
     if (successfulResults.length === 0) {
@@ -96,15 +105,16 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       images: successfulResults,
-      message: `Generated ${successfulResults.length} professional headshots`
+      message: `Generated ${successfulResults.length} professional headshots`,
+      cost_estimate: `~$${(successfulResults.length * 0.0023).toFixed(3)} USD`
     });
 
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Detailed error:', error);
     return NextResponse.json(
       { 
-        error: 'Failed to generate headshots. Please try again.',
-        details: error.message 
+        error: 'Generation failed',
+        details: error.message
       },
       { status: 500 }
     );
