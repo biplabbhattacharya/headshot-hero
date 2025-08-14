@@ -6,6 +6,7 @@ export default function Home() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedImages, setProcessedImages] = useState([]);
+  const [error, setError] = useState(null);
 
   const handleFileUpload = (file) => {
     if (file && file.type.startsWith('image/')) {
@@ -16,6 +17,7 @@ export default function Home() {
           preview: e.target.result,
           name: file.name
         });
+        setError(null); // Clear any previous errors
       };
       reader.readAsDataURL(file);
     }
@@ -23,35 +25,64 @@ export default function Home() {
 
   const generateHeadshots = async () => {
     setIsProcessing(true);
+    setError(null);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Mock generated headshots using the uploaded image
-    const mockResults = [
-      { id: 1, url: uploadedImage.preview, style: "Professional" },
-      { id: 2, url: uploadedImage.preview, style: "Corporate" },
-      { id: 3, url: uploadedImage.preview, style: "Casual" },
-      { id: 4, url: uploadedImage.preview, style: "Executive" }
-    ];
-    
-    setProcessedImages(mockResults);
-    setIsProcessing(false);
+    try {
+      // Prepare form data for API
+      const formData = new FormData();
+      formData.append('image', uploadedImage.file);
+
+      console.log('Sending image to AI...');
+
+      // Call our API endpoint
+      const response = await fetch('/api/generate-headshots', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to generate headshots');
+      }
+
+      console.log('AI generation successful!', result);
+      setProcessedImages(result.images);
+      
+    } catch (error) {
+      console.error('Generation failed:', error);
+      setError(error.message || 'Failed to generate headshots. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const downloadImage = (imageUrl, filename) => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadImage = async (imageUrl, filename) => {
+    try {
+      // Fetch the image
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Download failed. Please try again.');
+    }
   };
 
   const resetApp = () => {
     setUploadedImage(null);
     setProcessedImages([]);
     setIsProcessing(false);
+    setError(null);
   };
 
   return (
@@ -74,6 +105,33 @@ export default function Home() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-red-400">❌</span>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Generation Failed
+                </h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>{error}</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={() => setError(null)}
+                    className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-200"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!uploadedImage && !processedImages.length && (
           // Upload Section
           <div className="text-center mb-8">
@@ -106,7 +164,7 @@ export default function Home() {
                   </label>
                 </div>
                 <p className="text-sm text-gray-500">
-                  Supports JPG, PNG, and other image formats
+                  Supports JPG, PNG, and other image formats (max 10MB)
                 </p>
               </div>
             </div>
@@ -135,7 +193,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-green-500">✅</span>
-                    <span className="text-sm">High-resolution downloads</span>
+                    <span className="text-sm">High-resolution AI-generated images</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-green-500">✅</span>
@@ -149,10 +207,11 @@ export default function Home() {
                 <div className="pt-4">
                   <button
                     onClick={generateHeadshots}
-                    className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-2"
+                    disabled={isProcessing}
+                    className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-2 disabled:bg-gray-400"
                   >
                     <span>✨</span>
-                    <span>Generate Professional Headshots</span>
+                    <span>Generate Professional Headshots with AI</span>
                   </button>
                   <button
                     onClick={resetApp}
@@ -171,10 +230,11 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
             <h3 className="text-xl font-semibold mb-2">Creating Your Professional Headshots</h3>
-            <p className="text-gray-600 mb-4">Our AI is working its magic... This usually takes 30-60 seconds.</p>
+            <p className="text-gray-600 mb-4">Our AI is analyzing your photo and generating professional headshots...</p>
+            <p className="text-sm text-gray-500 mb-4">This usually takes 1-2 minutes for high-quality results.</p>
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
               <span>🕐</span>
-              <span>Processing your photo...</span>
+              <span>Processing with AI...</span>
             </div>
           </div>
         )}
@@ -184,7 +244,7 @@ export default function Home() {
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Your Professional Headshots Are Ready!
+                Your Professional AI Headshots Are Ready!
               </h3>
               <p className="text-gray-600">Click any image to download the high-resolution version</p>
             </div>
@@ -210,7 +270,7 @@ export default function Home() {
                   </div>
                   <div className="p-4">
                     <h4 className="font-semibold text-gray-900">{image.style} Style</h4>
-                    <p className="text-sm text-gray-600">Perfect for professional use</p>
+                    <p className="text-sm text-gray-600">AI-generated professional headshot</p>
                   </div>
                 </div>
               ))}
