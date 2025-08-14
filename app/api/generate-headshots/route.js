@@ -7,7 +7,7 @@ const replicate = new Replicate({
 
 export async function POST(request) {
   try {
-    console.log('API endpoint called - better headshot model');
+    console.log('API endpoint called - fixed PhotoMaker model');
     
     if (!process.env.REPLICATE_API_TOKEN) {
       return NextResponse.json(
@@ -35,41 +35,40 @@ export async function POST(request) {
     const mimeType = imageFile.type;
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    console.log('Starting generation with face-preserving model...');
+    console.log('Starting generation with fixed PhotoMaker model...');
 
-    // Define headshot styles with better prompts
+    // Define headshot styles WITH the required 'img' trigger word
     const styles = [
       {
         name: 'Professional',
-        prompt: 'professional corporate headshot, wearing business suit, clean white background, studio lighting, high quality photography, LinkedIn profile photo'
+        prompt: 'A professional corporate headshot of img person wearing a business suit, clean white background, studio lighting, high quality photography, LinkedIn profile photo'
       },
       {
         name: 'Corporate',
-        prompt: 'executive corporate portrait, formal business attire, neutral gray background, professional lighting, confident expression, corporate photography'
+        prompt: 'An executive corporate portrait of img person in formal business attire, neutral gray background, professional lighting, confident expression'
       },
       {
         name: 'Casual',
-        prompt: 'professional casual headshot, smart casual clothing, soft natural lighting, clean background, approachable friendly expression'
+        prompt: 'A professional casual headshot of img person wearing smart casual clothing, soft natural lighting, clean background, approachable friendly expression'
       },
       {
         name: 'Executive',
-        prompt: 'senior executive portrait, premium business suit, sophisticated dark background, dramatic lighting, authoritative confident pose'
+        prompt: 'A senior executive portrait of img person in a premium business suit, sophisticated dark background, dramatic lighting, authoritative confident pose'
       }
     ];
 
-    // Generate all 4 styles using a better face-preserving model
+    // Generate all 4 styles using PhotoMaker with correct syntax
     const generationPromises = styles.map(async (style, index) => {
       try {
         console.log(`Generating ${style.name} style...`);
         
         const output = await replicate.run(
-          // Better model that preserves faces (~$0.03 per image)
           "tencentarc/photomaker:ddfc2b08d209f9fa8c1eca692712918bd449f695dabb4a958da31802a9570fe4",
           {
             input: {
               prompt: `${style.prompt}, photorealistic, detailed face, preserve facial features, professional photography, high resolution`,
               input_image: dataUrl,
-              negative_prompt: "blurry, low quality, distorted face, different person, cartoon, anime, painting, sketch, bad anatomy, deformed face",
+              negative_prompt: "blurry, low quality, distorted face, different person, cartoon, anime, painting, sketch, bad anatomy, deformed face, multiple people",
               num_outputs: 1,
               guidance_scale: 5,
               num_inference_steps: 30,
