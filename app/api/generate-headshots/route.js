@@ -7,7 +7,7 @@ const replicate = new Replicate({
 
 export async function POST(request) {
   try {
-    console.log('API endpoint called');
+    console.log('API endpoint called - better headshot model');
     
     if (!process.env.REPLICATE_API_TOKEN) {
       return NextResponse.json(
@@ -35,43 +35,44 @@ export async function POST(request) {
     const mimeType = imageFile.type;
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    console.log('Starting generation with cheapest models...');
+    console.log('Starting generation with face-preserving model...');
 
-    // Define 4 different cheap headshot prompts
+    // Define headshot styles with better prompts
     const styles = [
       {
         name: 'Professional',
-        prompt: 'professional business headshot, corporate attire, clean background, studio lighting, high quality portrait photography'
+        prompt: 'professional corporate headshot, wearing business suit, clean white background, studio lighting, high quality photography, LinkedIn profile photo'
       },
       {
-        name: 'Corporate', 
-        prompt: 'executive corporate portrait, formal business suit, neutral background, professional photographer, sharp focus'
+        name: 'Corporate',
+        prompt: 'executive corporate portrait, formal business attire, neutral gray background, professional lighting, confident expression, corporate photography'
       },
       {
         name: 'Casual',
-        prompt: 'professional casual headshot, smart casual clothing, soft lighting, approachable expression, clean background'
+        prompt: 'professional casual headshot, smart casual clothing, soft natural lighting, clean background, approachable friendly expression'
       },
       {
         name: 'Executive',
-        prompt: 'senior executive portrait, formal attire, confident expression, professional studio setup, high-end photography'
+        prompt: 'senior executive portrait, premium business suit, sophisticated dark background, dramatic lighting, authoritative confident pose'
       }
     ];
 
-    // Generate all 4 styles using the cheapest model
+    // Generate all 4 styles using a better face-preserving model
     const generationPromises = styles.map(async (style, index) => {
       try {
         console.log(`Generating ${style.name} style...`);
         
         const output = await replicate.run(
-          // This is one of the cheapest models (~$0.0023 per image)
-          "stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
+          // Better model that preserves faces (~$0.03 per image)
+          "tencentarc/photomaker:ddfc2b08d209f9fa8c1eca692712918bd449f695dabb4a958da31802a9570fe4",
           {
             input: {
-              prompt: `${style.prompt}, photorealistic, detailed, professional photography`,
-              image: dataUrl,
-              strength: 0.7, // How much to change the original image
-              guidance_scale: 7.5,
-              num_inference_steps: 20, // Lower steps = cheaper
+              prompt: `${style.prompt}, photorealistic, detailed face, preserve facial features, professional photography, high resolution`,
+              input_image: dataUrl,
+              negative_prompt: "blurry, low quality, distorted face, different person, cartoon, anime, painting, sketch, bad anatomy, deformed face",
+              num_outputs: 1,
+              guidance_scale: 5,
+              num_inference_steps: 30,
               seed: Math.floor(Math.random() * 1000000)
             }
           }
@@ -100,13 +101,13 @@ export async function POST(request) {
       );
     }
 
-    console.log(`Successfully generated ${successfulResults.length} headshots`);
+    console.log(`Successfully generated ${successfulResults.length} face-preserving headshots`);
 
     return NextResponse.json({
       success: true,
       images: successfulResults,
-      message: `Generated ${successfulResults.length} professional headshots`,
-      cost_estimate: `~$${(successfulResults.length * 0.0023).toFixed(3)} USD`
+      message: `Generated ${successfulResults.length} professional headshots with face preservation`,
+      cost_estimate: `~$${(successfulResults.length * 0.03).toFixed(2)} USD`
     });
 
   } catch (error) {
